@@ -1,0 +1,65 @@
+{
+	servers {
+		#enable_full_duplex
+		#enable_websocket
+		#enable_http2
+	}
+	frankenphp {
+		#worker /var/www/html/public/index.php
+		watch /var/www/html
+	}
+}
+
+:{$WEB_SERVER_PORT} {
+	#log {
+	#	# Redact the authorization query parameter that can be set by Mercure
+	#	format filter {
+	#		request>uri query {
+	#			replace authorization REDACTED
+	#		}
+	#	}
+	#}
+
+	root * /var/www/html
+	encode zstd br gzip
+
+	file_server {
+		index index.php
+	}
+
+	# Uncomment the following lines to enable Mercure and Vulcain modules
+	#mercure {
+	#	# Transport to use (default to Bolt)
+	#	transport_url {$MERCURE_TRANSPORT_URL:bolt:///data/mercure.db}
+	#	# Publisher JWT key
+	#	publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} {env.MERCURE_PUBLISHER_JWT_ALG}
+	#	# Subscriber JWT key
+	#	subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} {env.MERCURE_SUBSCRIBER_JWT_ALG}
+	#	# Allow anonymous subscribers (double-check that it's what you want)
+	#	anonymous
+	#	# Enable the subscription API (double-check that it's what you want)
+	#	subscriptions
+	#	# Extra directives
+	#	{$MERCURE_EXTRA_DIRECTIVES}
+	#}
+	#vulcain
+	php_server
+	route {
+		# Add trailing slash for directory requests
+		@canonicalPath {
+			file {path}/index.php
+			not path */
+		}
+		redir @canonicalPath {path}/ 308
+		# If the requested file does not exist, try index files
+		@indexFiles file {
+			try_files {path} {path}/index.php index.php
+			split_path .php
+		}
+		rewrite @indexFiles {http.matchers.file.relative}
+		# FrankenPHP!
+		@phpFiles path *.php
+		php @phpFiles
+		file_server
+	}
+}
