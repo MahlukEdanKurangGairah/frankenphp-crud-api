@@ -33,6 +33,7 @@ ENV FRANKENPHP_WORKER_TIMEOUT=60s
 #RUN cp ${PHP_INI_DIR}/php.ini-development ${PHP_INI_DIR}/php.ini
 COPY ./php.ini ${PHP_INI_DIR}/php.ini
 COPY ./Caddyfile /etc/caddy/Caddyfile
+COPY ./cacert.pem /var/www/html/cacert.pem
 COPY ./index.php /var/www/html/index.php
 COPY ./composer.json /var/www/html/composer.json
 
