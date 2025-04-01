@@ -1,8 +1,8 @@
 # Gunakan image base PHP dengan OpenSwoole
 FROM dunglas/frankenphp:builder-php8.3.16
 # Install dependensi yang diperlukan
-RUN apt-get update && apt-get install -y curl unzip nano --no-install-recommends \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests -y curl unzip nano \
+    && apt autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-install pdo_mysql mysqli pcntl opcache
 RUN docker-php-ext-configure intl --enable-intl \
